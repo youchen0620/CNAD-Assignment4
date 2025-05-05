@@ -11,18 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v3
+
+    - name: Set variables
+      id: vars
+      run: |
+        COMMIT_HASH=$(git rev-parse --short HEAD)
+        TIMESTAMP=$(date +%Y%m%d-%H%M)
+        echo "TAG=${COMMIT_HASH}-${TIMESTAMP}" >> $GITHUB_ENV
 
     - name: Log in to Docker Hub
       run: echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
-    - name: Build image
-      run: |
-        IMAGE_TAG=$(git rev-parse --short HEAD)-$(date +'%Y%m%d-%H%M')
-        docker build -t ${DOCKER_USERNAME}/2025cloud:${IMAGE_TAG} .
+    - name: Build Docker image
+      run: docker build -t ${DOCKER_USERNAME}/2025cloud:${TAG} .
 
-    - name: Push image
-      run: |
-        IMAGE_TAG=$(git rev-parse --short HEAD)-$(date +'%Y%m%d-%H%M')
-        docker push ${DOCKER_USERNAME}/2025cloud:${IMAGE_TAG}
+    - name: Push Docker image
+      run: docker push ${DOCKER_USERNAME}/2025cloud:${TAG}
